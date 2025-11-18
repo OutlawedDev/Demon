@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demon Slayer - Dynamic Scroll Manga Viewer (Final)</title>
+    <style>
+        /*
+        ================================================================================
+        1. BASE STYLES & GLOBALS
+        ================================================================================
+        */
+        :root {
+            --primary-color: #e3342f; /* Deep Red */
+            --secondary-color: #38c172; /* Neon Green */
+            --bg-dark: #121212;
+            --bg-light-dark: #1e1e1e;
+            --text-light: #f5f5f5;
+            --glow-shadow: 0 0 15px var(--primary-color), 0 0 20px var(--primary-color);
+            --transition-time: 0.3s;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            line-height: 1.6;
+            overflow-x: hidden;
+            transition: background-color var(--transition-time);
+        }
+
+        /*
+        ================================================================================
+        2. HEADER & GLOWING TITLE
+        ================================================================================
+        */
+        header {
+            text-align: center;
+            padding: 30px 20px;
+            background: var(--bg-light-dark);
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        #main-title {
+            font-size: clamp(2.5rem, 8vw, 6rem);
+            font-weight: 900;
+            letter-spacing: 5px;
+            text-shadow: var(--glow-shadow);
+            color: var(--text-light);
+            animation: pulse-glow 3s infinite alternate ease-in-out;
+            transition: var(--transition-time);
+        }
+
+        @keyframes pulse-glow {
+            0% { text-shadow: var(--glow-shadow); }
+            50% { text-shadow: 0 0 8px var(--primary-color), 0 0 15px var(--primary-color), 0 0 25px var(--primary-color); }
+            100% { text-shadow: var(--glow-shadow); }
+        }
+
+        /*
+        ================================================================================
+        3. CHAPTER GRID & BUTTONS
+        ================================================================================
+        */
+        #chapter-grid {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+        }
+
+        .chapter-button {
+            background: var(--bg-light-dark);
+            color: var(--text-light);
+            border: 2px solid var(--primary-color);
+            padding: 15px 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all var(--transition-time);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chapter-button:hover {
+            background: var(--primary-color);
+            color: var(--bg-dark);
+            box-shadow: 0 0 20px var(--primary-color);
+            transform: translateY(-3px) scale(1.05);
+        }
+
+        .chapter-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300%;
+            height: 300%;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.7s;
+            border-radius: 50%;
+            transform: translate(-50%, -50%) rotate(45deg);
+            z-index: 1;
+        }
+
+        .chapter-button:hover::before {
+            width: 0;
+            height: 0;
+            opacity: 0;
+        }
+
+        /*
+        ================================================================================
+        4. SIMPLE SCROLL VIEWER (The new viewer)
+        ================================================================================
+        */
+        #viewer-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
+            display: none; /* Hidden by default */
+            z-index: 1000;
+            padding: 60px 0 20px 0; /* Space for the top control bar */
+            overflow-y: scroll; /* Primary scroll mechanism */
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on mobile */
+            scroll-behavior: smooth; /* Smooth navigation via jump links */
+        }
+
+        .page-image {
+            display: block;
+            width: 100%;
+            max-width: 900px; /* Max width for desktop viewing */
+            height: auto;
+            margin: 0 auto 10px auto;
+            border: 1px solid #333;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+            background-color: #f5f5f5; /* Placeholder/loading color */
+        }
+
+        /* Control Bar (Fixed to Top) */
+        #viewer-controls {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(30, 30, 30, 0.95);
+            padding: 10px 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            z-index: 1010;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .control-btn {
+            background: var(--primary-color);
+            color: var(--bg-dark);
+            border: none;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background var(--transition-time), transform var(--transition-time);
+            box-shadow: 0 0 5px var(--primary-color);
+        }
+
+        .control-btn:hover {
+            background: var(--secondary-color);
+            box-shadow: 0 0 10px var(--secondary-color);
+            transform: scale(1.05);
+        }
+
+        #current-chapter-display {
+            font-size: 1.2rem;
+            color: var(--text-light);
+            text-shadow: 0 0 5px var(--primary-color);
+        }
+
+        /*
+        ================================================================================
+        5. DEVTOOLS WARNING & OVERLAYS
+        ================================================================================
+        */
+        #devtools-warning {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(179, 0, 0, 0.98);
+            color: var(--text-light);
+            display: none;
+            place-items: center;
+            text-align: center;
+            z-index: 2000;
+            padding: 20px;
+            font-size: 2rem;
+            font-weight: bold;
+            text-shadow: 0 0 10px black;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            /* Allow clicking through the overlay when it's transparent */
+            pointer-events: none; 
+        }
+
+        #devtools-warning.active {
+            display: grid;
+            opacity: 1;
+            /* Block interaction when active */
+            pointer-events: auto; 
+        }
+
+        #devtools-warning p {
+            border: 5px solid var(--text-light);
+            padding: 30px;
+            animation: warning-flash 0.5s infinite alternate;
+        }
+
+        @keyframes warning-flash {
+            0% { border-color: var(--text-light); }
+            100% { border-color: yellow; background-color: rgba(255, 255, 0, 0.1); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 id="main-title">DEMON SLAYER</h1>
+    </header>
+
+    <main id="main-content">
+        <h2 style="text-align: center; margin: 20px 0;">Select Chapter:</h2>
+        <section id="chapter-grid">
+            </section>
+    </main>
+
+    <section id="viewer-container">
+        <div id="viewer-controls">
+            <button id="close-viewer-btn" class="control-btn">← Close Chapter</button>
+            <span id="current-chapter-display"></span>
+            <a href="#top-of-page" class="control-btn">Scroll Top ↑</a>
+        </div>
+
+        <div id="page-display">
+            <div id="top-of-page"></div>
+        </div>
+    </section>
+
+    <div id="devtools-warning">
+        <p>🚨 **WARNING** 🚨<br>Inspection Detected! Please close the console to continue viewing.</p>
+    </div>
+
+    <script>
+        /*
+        ================================================================================
+        6. JAVASCRIPT CORE LOGIC
+        ================================================================================
+        */
+        document.addEventListener('DOMContentLoaded', () => {
+            const chapterGrid = document.getElementById('chapter-grid');
+            const viewerContainer = document.getElementById('viewer-container');
+            const pageDisplay = document.getElementById('page-display');
+            const closeBtn = document.getElementById('close-viewer-btn');
+            const chapterDisplay = document.getElementById('current-chapter-display');
+            const warningOverlay = document.getElementById('devtools-warning');
+
+            // --- Configuration ---
+            const TOTAL_CHAPTERS = 205;
+            // Removed CHAPTER_PAGE_COUNT, now pages load dynamically until a 404 error is hit.
+            
+            let currentChapter = 0;
+            let devtoolsCheckInterval = null;
+
+            /**
+             * Generates 205 chapter buttons.
+             */
+            function generateChapterButtons() {
+                for (let i = 1; i <= TOTAL_CHAPTERS; i++) {
+                    const button = document.createElement('button');
+                    button.className = 'chapter-button';
+                    button.textContent = `Chapter ${i}`;
+                    button.dataset.chapter = i;
+                    button.onclick = () => openChapter(i);
+                    chapterGrid.appendChild(button);
+                }
+            }
+
+            /**
+             * Opens the scroll viewer for a given chapter.
+             */
+            function openChapter(chapterNum) {
+                currentChapter = chapterNum;
+                
+                document.getElementById('main-content').style.display = 'none';
+                viewerContainer.style.display = 'block';
+                
+                chapterDisplay.textContent = `Chapter ${chapterNum}`;
+                viewerContainer.scrollTop = 0; // Scroll to top
+                
+                // Clear and load pages
+                pageDisplay.innerHTML = '<div id="top-of-page"></div>'; 
+                loadChapterPages();
+                
+                // Start DevTools check
+                startDevToolsCheck();
+            }
+
+            /**
+             * Dynamically loads pages until an image fails to load (404).
+             */
+            function loadChapterPages() {
+                let pageNum = 1;
+                let loadingComplete = false;
+                
+                const loadNextPage = () => {
+                    if (loadingComplete) return;
+
+                    const img = document.createElement('img');
+                    img.className = 'page-image';
+                    img.id = `page-${pageNum}`;
+                    img.alt = `Chapter ${currentChapter} Page ${pageNum}`;
+                    
+                    const imageUrl = `./images/chapter_${currentChapter}/page_${pageNum}.jpg`;
+                    
+                    // --- Success Handler ---
+                    img.onload = function() {
+                        pageDisplay.appendChild(img);
+                        pageNum++;
+                        // Load the next page recursively, creating a stream effect
+                        loadNextPage(); 
+                    };
+
+                    // --- Failure Handler (End of Chapter Detection) ---
+                    img.onerror = function() {
+                        // This indicates the image file doesn't exist (end of chapter)
+                        loadingComplete = true;
+                        
+                        // Add a subtle end-of-chapter marker
+                        const endMarker = document.createElement('div');
+                        endMarker.style.cssText = `text-align: center; padding: 50px; color: #555; font-style: italic;`;
+                        endMarker.textContent = `--- End of Chapter ${currentChapter} (${pageNum - 1} pages loaded) ---`;
+                        pageDisplay.appendChild(endMarker);
+                    };
+
+                    // Set the source to start loading
+                    img.src = imageUrl;
+                };
+
+                loadNextPage(); // Start the dynamic loading sequence
+            }
+
+            /**
+             * Closes the viewer and returns to the chapter grid.
+             */
+            function closeChapter() {
+                stopDevToolsCheck();
+                viewerContainer.style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
+                currentChapter = 0;
+                pageDisplay.innerHTML = ''; 
+            }
+
+            // --- Event Listeners ---
+            closeBtn.addEventListener('click', closeChapter);
+            
+            // Disable Right-Click (Context Menu)
+            document.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+            });
+
+            // Keyboard Navigation (Arrow keys scroll the viewer smoothly)
+            document.addEventListener('keydown', (e) => {
+                if (viewerContainer.style.display === 'block') {
+                    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                        e.preventDefault(); 
+                        const scrollAmount = e.key === 'ArrowDown' ? 300 : -300; 
+                        viewerContainer.scrollBy({ top: scrollAmount, behavior: 'smooth' });
+                    } else if (e.key === 'Escape') {
+                        closeChapter();
+                    }
+                }
+            });
+
+
+            // --- DevTools Detection Logic (Fixed: No localStorage/Permanent Lockout) ---
+            
+            const checkDevTools = () => {
+                const threshold = 160;
+                // Check 1: Size differential
+                if (window.outerWidth - window.innerWidth > threshold ||
+                    window.outerHeight - window.innerHeight > threshold) {
+                    return true;
+                }
+                
+                // Check 2: toString trick
+                const func = function() {};
+                func.toString = () => 'function() { [native code] }';
+                try {
+                    console.log(func);
+                } catch (e) {}
+                
+                return false;
+            };
+            
+            function handleDevToolsDetection() {
+                // Show warning overlay and disable interaction
+                warningOverlay.classList.add('active'); 
+                document.body.style.overflow = 'hidden'; // Lock scrolling
+                viewerContainer.style.display = 'none'; // Hide viewer
+            }
+            
+            function clearDevToolsDetection() {
+                // Hide warning overlay and re-enable interaction
+                warningOverlay.classList.remove('active'); 
+                document.body.style.overflow = 'auto'; // Re-enable scrolling
+                
+                // Only re-show viewer if a chapter was open
+                if (currentChapter !== 0) {
+                    viewerContainer.style.display = 'block';
+                }
+            }
+
+            function startDevToolsCheck() {
+                stopDevToolsCheck();
+                
+                devtoolsCheckInterval = setInterval(() => {
+                    if (checkDevTools()) {
+                        handleDevToolsDetection();
+                    } else {
+                        clearDevToolsDetection(); // Clear warning if DevTools is closed
+                    }
+                }, 100); 
+                
+                window.addEventListener('resize', checkOnResize);
+            }
+            
+            function stopDevToolsCheck() {
+                clearInterval(devtoolsCheckInterval);
+                devtoolsCheckInterval = null;
+                window.removeEventListener('resize', checkOnResize);
+                clearDevToolsDetection();
+            }
+            
+            function checkOnResize() {
+                if (checkDevTools()) {
+                    handleDevToolsDetection();
+                } else {
+                    clearDevToolsDetection();
+                }
+            }
+
+            // --- Initialization ---
+            generateChapterButtons();
+            
+        });
+    </script>
+
+</body>
+</html>
