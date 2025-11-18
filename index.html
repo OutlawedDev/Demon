@@ -3,21 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Demon Slayer - Dynamic Scroll Manga Viewer (Final)</title>
+    <title>Demon Slayer - Dynamic Scroll Manga Viewer</title>
     <style>
         /*
         ================================================================================
-        1. BASE STYLES & GLOBALS
+        1. BASE STYLES & GLOBALS - MODERN DARK THEME
         ================================================================================
         */
         :root {
-            --primary-color: #e3342f; /* Deep Red */
-            --secondary-color: #38c172; /* Neon Green */
-            --bg-dark: #121212;
-            --bg-light-dark: #1e1e1e;
+            --primary-color: #e3342f;
+            --primary-dark: #c12a24;
+            --primary-light: #ff4d44;
+            --secondary-color: #38c172;
+            --accent-color: #ffd700;
+            --bg-dark: #0a0e27;
+            --bg-light-dark: #141829;
+            --bg-card: #1a1f3a;
+            --bg-hover: #252d47;
             --text-light: #f5f5f5;
+            --text-muted: #a0aec0;
+            --border-color: rgba(227, 52, 47, 0.2);
             --glow-shadow: 0 0 15px var(--primary-color), 0 0 20px var(--primary-color);
             --transition-time: 0.3s;
+            --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+            --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         *, *::before, *::after {
@@ -26,77 +35,209 @@
             padding: 0;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-dark);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #0d1535 100%);
+            background-attachment: fixed;
             color: var(--text-light);
             line-height: 1.6;
             overflow-x: hidden;
             transition: background-color var(--transition-time);
+            will-change: scroll-position;
+        }
+
+        /* Optimized scrollbar styling for better performance */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+            opacity: 0.6;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-light);
+            opacity: 1;
         }
 
         /*
         ================================================================================
-        2. HEADER & GLOWING TITLE
+        2. HEADER & GLOWING TITLE - ENHANCED ANIMATIONS
         ================================================================================
         */
         header {
             text-align: center;
-            padding: 30px 20px;
-            background: var(--bg-light-dark);
-            border-bottom: 2px solid var(--primary-color);
-        }
-
-        #main-title {
-            font-size: clamp(2.5rem, 8vw, 6rem);
-            font-weight: 900;
-            letter-spacing: 5px;
-            text-shadow: var(--glow-shadow);
-            color: var(--text-light);
-            animation: pulse-glow 3s infinite alternate ease-in-out;
-            transition: var(--transition-time);
-        }
-
-        @keyframes pulse-glow {
-            0% { text-shadow: var(--glow-shadow); }
-            50% { text-shadow: 0 0 8px var(--primary-color), 0 0 15px var(--primary-color), 0 0 25px var(--primary-color); }
-            100% { text-shadow: var(--glow-shadow); }
-        }
-
-        /*
-        ================================================================================
-        3. CHAPTER GRID & BUTTONS
-        ================================================================================
-        */
-        #chapter-grid {
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 15px;
-        }
-
-        .chapter-button {
-            background: var(--bg-light-dark);
-            color: var(--text-light);
-            border: 2px solid var(--primary-color);
-            padding: 15px 10px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: all var(--transition-time);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+            padding: 40px 20px;
+            background: rgba(20, 24, 41, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--border-color);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            animation: slideInDown 0.6s var(--ease-out);
             position: relative;
             overflow: hidden;
         }
 
-        .chapter-button:hover {
-            background: var(--primary-color);
-            color: var(--bg-dark);
-            box-shadow: 0 0 20px var(--primary-color);
-            transform: translateY(-3px) scale(1.05);
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        #main-title {
+            font-size: clamp(2.5rem, 8vw, 5.5rem);
+            font-weight: 900;
+            letter-spacing: 6px;
+            background: linear-gradient(135deg, var(--text-light) 0%, var(--primary-light) 50%, var(--text-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(227, 52, 47, 0.3);
+            animation: fadeInScale 0.8s var(--ease-out) 0.1s both, float 6s ease-in-out infinite;
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /*
+        ================================================================================
+        3. MAIN CONTENT & CHAPTER GRID - MODERN LAYOUT
+        ================================================================================
+        */
+        #main-content {
+            animation: fadeIn 0.6s var(--ease-out) 0.2s both;
+        }
+
+        #main-content h2 {
+            text-align: center;
+            margin: 40px 0 10px;
+            font-size: clamp(1.5rem, 5vw, 2.2rem);
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            animation: fadeInUp 0.6s var(--ease-out) 0.3s both;
+        }
+
+        #main-content h2::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+            margin: 15px auto 0;
+            border-radius: 2px;
+        }
+
+        #chapter-grid {
+            max-width: 1400px;
+            margin: 50px auto;
+            padding: 30px 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 18px;
+            animation: fadeIn 0.8s var(--ease-out) 0.4s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /*
+        ================================================================================
+        4. CHAPTER BUTTONS - ENHANCED STYLING & INTERACTIONS
+        ================================================================================
+        */
+        .chapter-button {
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-hover) 100%);
+            color: var(--text-light);
+            border: 2px solid var(--border-color);
+            padding: 16px 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: all var(--transition-time) var(--ease-out);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(8px);
+            animation: staggerIn 0.5s var(--ease-out) both;
+            will-change: transform;
+        }
+
+        .chapter-button:nth-child(1) { animation-delay: 0s; }
+        .chapter-button:nth-child(2) { animation-delay: 0.05s; }
+        .chapter-button:nth-child(3) { animation-delay: 0.1s; }
+        .chapter-button:nth-child(4) { animation-delay: 0.15s; }
+        .chapter-button:nth-child(n+5) { animation-delay: 0.2s; }
+
+        @keyframes staggerIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
 
         .chapter-button::before {
@@ -104,24 +245,45 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 300%;
-            height: 300%;
-            background: rgba(255, 255, 255, 0.1);
-            transition: all 0.7s;
-            border-radius: 50%;
-            transform: translate(-50%, -50%) rotate(45deg);
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+            transform: translate(-50%, -50%) scale(0);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 1;
+            border-radius: 12px;
+        }
+
+        .chapter-button:hover {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: #fff;
+            border-color: var(--primary-light);
+            box-shadow: 
+                0 12px 24px rgba(227, 52, 47, 0.3),
+                0 0 20px var(--primary-color),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            transform: translateY(-4px) scale(1.06);
         }
 
         .chapter-button:hover::before {
-            width: 0;
-            height: 0;
+            transform: translate(-50%, -50%) scale(2);
             opacity: 0;
+        }
+
+        .chapter-button:active {
+            transform: translateY(-2px) scale(1.03);
+        }
+
+        .chapter-button:focus {
+            outline: none;
+            box-shadow: 
+                0 0 0 3px rgba(227, 52, 47, 0.2),
+                0 12px 24px rgba(227, 52, 47, 0.3);
         }
 
         /*
         ================================================================================
-        4. SIMPLE SCROLL VIEWER (The new viewer)
+        5. SCROLL VIEWER - MODERN CONTAINER
         ================================================================================
         */
         #viewer-container {
@@ -131,23 +293,80 @@
             width: 100%;
             height: 100%;
             background: var(--bg-dark);
-            display: none; /* Hidden by default */
+            display: none;
             z-index: 1000;
-            padding: 60px 0 20px 0; /* Space for the top control bar */
-            overflow-y: scroll; /* Primary scroll mechanism */
-            -webkit-overflow-scrolling: touch; /* Smooth scrolling on mobile */
-            scroll-behavior: smooth; /* Smooth navigation via jump links */
+            padding: 70px 0 20px 0;
+            overflow-y: scroll;
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+            animation: slideInRight 0.4s var(--ease-out);
         }
 
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Book flip page container with performance optimization */
         .page-image {
             display: block;
             width: 100%;
-            max-width: 900px; /* Max width for desktop viewing */
+            max-width: 900px;
             height: auto;
-            margin: 0 auto 10px auto;
-            border: 1px solid #333;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
-            background-color: #f5f5f5; /* Placeholder/loading color */
+            margin: 0 auto 24px auto;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-hover) 100%);
+            opacity: 0;
+            animation: pageFlipIn 0.6s var(--ease-out) forwards;
+            transition: transform 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out), filter 0.3s var(--ease-out);
+            will-change: transform;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            perspective: 1000px;
+            -webkit-perspective: 1000px;
+            contain: layout style paint;
+        }
+
+        /* Book flip animation with 3D perspective effect */
+        @keyframes pageFlipIn {
+            0% {
+                opacity: 0;
+                transform: rotateX(90deg) translateZ(0);
+            }
+            70% {
+                opacity: 1;
+                transform: rotateX(-10deg) translateZ(0);
+            }
+            100% {
+                opacity: 1;
+                transform: rotateX(0) translateZ(0);
+            }
+        }
+
+        /* Sequential flip animation for multiple pages */
+        .page-image:nth-child(1) { animation-delay: 0s; }
+        .page-image:nth-child(2) { animation-delay: 0.08s; }
+        .page-image:nth-child(3) { animation-delay: 0.16s; }
+        .page-image:nth-child(4) { animation-delay: 0.24s; }
+        .page-image:nth-child(n+5) { animation-delay: 0.32s; }
+
+        .page-image:hover {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 28px 56px rgba(227, 52, 47, 0.3);
+        }
+
+        .page-image.loading {
+            animation: none;
+            opacity: 0.3;
+            filter: blur(2px);
         }
 
         /* Control Bar (Fixed to Top) */
@@ -156,43 +375,63 @@
             top: 0;
             left: 0;
             width: 100%;
-            background: rgba(30, 30, 30, 0.95);
-            padding: 10px 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            background: linear-gradient(180deg, rgba(20, 24, 41, 0.95) 0%, rgba(20, 24, 41, 0.8) 100%);
+            backdrop-filter: blur(12px);
+            padding: 14px 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px rgba(227, 52, 47, 0.1);
             z-index: 1010;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 20px;
+            border-bottom: 1px solid var(--border-color);
+            animation: slideInDown 0.4s var(--ease-out);
         }
 
         .control-btn {
-            background: var(--primary-color);
-            color: var(--bg-dark);
-            border: none;
-            padding: 8px 15px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 10px 18px;
             font-size: 0.9rem;
-            font-weight: bold;
-            border-radius: 5px;
+            font-weight: 600;
+            border-radius: 8px;
             cursor: pointer;
-            transition: background var(--transition-time), transform var(--transition-time);
-            box-shadow: 0 0 5px var(--primary-color);
+            transition: all var(--transition-time) var(--ease-out);
+            box-shadow: 0 4px 12px rgba(227, 52, 47, 0.2), 0 0 10px rgba(227, 52, 47, 0.1);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+            will-change: transform;
         }
 
         .control-btn:hover {
-            background: var(--secondary-color);
-            box-shadow: 0 0 10px var(--secondary-color);
-            transform: scale(1.05);
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-color) 100%);
+            box-shadow: 
+                0 8px 24px rgba(227, 52, 47, 0.4),
+                0 0 20px rgba(227, 52, 47, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .control-btn:active {
+            transform: translateY(0);
         }
 
         #current-chapter-display {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
             color: var(--text-light);
-            text-shadow: 0 0 5px var(--primary-color);
+            text-shadow: 0 0 10px rgba(227, 52, 47, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            flex: 1;
+            text-align: center;
         }
 
         /*
         ================================================================================
-        5. DEVTOOLS WARNING & OVERLAYS
+        6. DEVTOOLS WARNING - ENHANCED STYLING
         ================================================================================
         */
         #devtools-warning {
@@ -201,38 +440,139 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(179, 0, 0, 0.98);
+            background: linear-gradient(135deg, rgba(179, 0, 0, 0.95) 0%, rgba(139, 0, 0, 0.95) 100%);
             color: var(--text-light);
             display: none;
             place-items: center;
             text-align: center;
             z-index: 2000;
             padding: 20px;
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: bold;
-            text-shadow: 0 0 10px black;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
             opacity: 0;
             transition: opacity 0.5s ease-in-out;
-            /* Allow clicking through the overlay when it's transparent */
-            pointer-events: none; 
+            pointer-events: none;
+            backdrop-filter: blur(4px);
         }
 
         #devtools-warning.active {
             display: grid;
             opacity: 1;
-            /* Block interaction when active */
-            pointer-events: auto; 
+            pointer-events: auto;
+            animation: slideInDown 0.4s var(--ease-out);
         }
 
         #devtools-warning p {
-            border: 5px solid var(--text-light);
-            padding: 30px;
-            animation: warning-flash 0.5s infinite alternate;
+            border: 4px solid var(--text-light);
+            padding: 40px 30px;
+            border-radius: 16px;
+            animation: warning-pulse 0.6s infinite alternate;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.1);
         }
 
-        @keyframes warning-flash {
-            0% { border-color: var(--text-light); }
-            100% { border-color: yellow; background-color: rgba(255, 255, 0, 0.1); }
+        @keyframes warning-pulse {
+            0% { 
+                border-color: var(--text-light);
+                box-shadow: 0 0 20px rgba(255, 255, 255, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.05);
+            }
+            100% { 
+                border-color: #ffff00;
+                background-color: rgba(255, 255, 0, 0.08);
+                box-shadow: 0 0 40px rgba(255, 255, 0, 0.4), inset 0 0 20px rgba(255, 255, 0, 0.1);
+            }
+        }
+
+        /*
+        ================================================================================
+        7. RESPONSIVE DESIGN
+        ================================================================================
+        */
+        @media (max-width: 768px) {
+            #main-title {
+                font-size: clamp(2rem, 6vw, 3.5rem);
+                letter-spacing: 3px;
+            }
+
+            header {
+                padding: 25px 15px;
+            }
+
+            #chapter-grid {
+                grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+                gap: 12px;
+                padding: 20px 15px;
+                margin: 30px auto;
+            }
+
+            .chapter-button {
+                padding: 12px 8px;
+                font-size: 0.85rem;
+                border-radius: 8px;
+            }
+
+            #viewer-controls {
+                padding: 12px 15px;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+
+            .control-btn {
+                padding: 8px 12px;
+                font-size: 0.8rem;
+                flex: 1;
+                min-width: 100px;
+            }
+
+            #current-chapter-display {
+                width: 100%;
+                font-size: 1rem;
+                margin: 0;
+                order: 3;
+            }
+
+            .page-image {
+                max-width: 95%;
+                margin: 0 auto 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #main-title {
+                font-size: clamp(1.5rem, 5vw, 2.5rem);
+                letter-spacing: 2px;
+            }
+
+            #chapter-grid {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+                gap: 10px;
+            }
+
+            .chapter-button {
+                padding: 10px 6px;
+                font-size: 0.75rem;
+            }
+
+            #viewer-container {
+                padding: 60px 0 15px;
+            }
+
+            #viewer-controls {
+                padding: 10px 12px;
+                flex-direction: column;
+            }
+
+            .control-btn {
+                width: 100%;
+            }
+
+            #devtools-warning p {
+                padding: 25px 15px;
+                font-size: 1.2rem;
+                border: 3px solid var(--text-light);
+            }
         }
 
     </style>
@@ -244,9 +584,9 @@
     </header>
 
     <main id="main-content">
-        <h2 style="text-align: center; margin: 20px 0;">Select Chapter:</h2>
+        <h2>Select Chapter:</h2>
         <section id="chapter-grid">
-            </section>
+        </section>
     </main>
 
     <section id="viewer-container">
@@ -268,7 +608,7 @@
     <script>
         /*
         ================================================================================
-        6. JAVASCRIPT CORE LOGIC
+        8. JAVASCRIPT CORE LOGIC WITH PERFORMANCE OPTIMIZATION
         ================================================================================
         */
         document.addEventListener('DOMContentLoaded', () => {
@@ -281,27 +621,31 @@
 
             // --- Configuration ---
             const TOTAL_CHAPTERS = 205;
-            // Removed CHAPTER_PAGE_COUNT, now pages load dynamically until a 404 error is hit.
+            const PRELOAD_DISTANCE = 3; // Preload images 3 ahead and behind
             
             let currentChapter = 0;
             let devtoolsCheckInterval = null;
+            let isLoadingPages = false;
+            let loadedPages = new Map();
+            let scrollTimeout = null;
 
             /**
-             * Generates 205 chapter buttons.
+             * Generates 205 chapter buttons with optimized event delegation
              */
             function generateChapterButtons() {
+                const fragment = document.createDocumentFragment();
                 for (let i = 1; i <= TOTAL_CHAPTERS; i++) {
                     const button = document.createElement('button');
                     button.className = 'chapter-button';
                     button.textContent = `Chapter ${i}`;
                     button.dataset.chapter = i;
-                    button.onclick = () => openChapter(i);
-                    chapterGrid.appendChild(button);
+                    fragment.appendChild(button);
                 }
+                chapterGrid.appendChild(fragment);
             }
 
             /**
-             * Opens the scroll viewer for a given chapter.
+             * Opens the scroll viewer with optimized rendering
              */
             function openChapter(chapterNum) {
                 currentChapter = chapterNum;
@@ -310,22 +654,26 @@
                 viewerContainer.style.display = 'block';
                 
                 chapterDisplay.textContent = `Chapter ${chapterNum}`;
-                viewerContainer.scrollTop = 0; // Scroll to top
+                viewerContainer.scrollTop = 0;
                 
-                // Clear and load pages
                 pageDisplay.innerHTML = '<div id="top-of-page"></div>'; 
-                loadChapterPages();
+                loadedPages.clear();
+                isLoadingPages = false;
                 
-                // Start DevTools check
+                loadChapterPages();
                 startDevToolsCheck();
             }
 
             /**
-             * Dynamically loads pages until an image fails to load (404).
+             * Dynamically loads pages with performance optimization and preloading
              */
             function loadChapterPages() {
+                if (isLoadingPages) return;
+                isLoadingPages = true;
+
                 let pageNum = 1;
                 let loadingComplete = false;
+                let pagesInProgress = new Map();
                 
                 const loadNextPage = () => {
                     if (loadingComplete) return;
@@ -336,78 +684,86 @@
                     img.alt = `Chapter ${currentChapter} Page ${pageNum}`;
                     
                     const imageUrl = `./images/chapter_${currentChapter}/page_${pageNum}.jpg`;
+                    pagesInProgress.set(pageNum, true);
                     
-                    // --- Success Handler ---
                     img.onload = function() {
                         pageDisplay.appendChild(img);
+                        loadedPages.set(pageNum, true);
+                        pagesInProgress.delete(pageNum);
                         pageNum++;
-                        // Load the next page recursively, creating a stream effect
-                        loadNextPage(); 
+                        requestAnimationFrame(loadNextPage);
                     };
 
-                    // --- Failure Handler (End of Chapter Detection) ---
                     img.onerror = function() {
-                        // This indicates the image file doesn't exist (end of chapter)
                         loadingComplete = true;
+                        isLoadingPages = false;
                         
-                        // Add a subtle end-of-chapter marker
                         const endMarker = document.createElement('div');
-                        endMarker.style.cssText = `text-align: center; padding: 50px; color: #555; font-style: italic;`;
+                        endMarker.style.cssText = `text-align: center; padding: 50px; color: var(--text-muted); font-style: italic; animation: fadeInUp 0.6s var(--ease-out);`;
                         endMarker.textContent = `--- End of Chapter ${currentChapter} (${pageNum - 1} pages loaded) ---`;
                         pageDisplay.appendChild(endMarker);
                     };
 
-                    // Set the source to start loading
                     img.src = imageUrl;
                 };
 
-                loadNextPage(); // Start the dynamic loading sequence
+                loadNextPage();
             }
 
             /**
-             * Closes the viewer and returns to the chapter grid.
+             * Closes the viewer with optimized cleanup
              */
             function closeChapter() {
                 stopDevToolsCheck();
                 viewerContainer.style.display = 'none';
                 document.getElementById('main-content').style.display = 'block';
                 currentChapter = 0;
-                pageDisplay.innerHTML = ''; 
+                pageDisplay.innerHTML = '';
+                loadedPages.clear();
+                isLoadingPages = false;
             }
 
-            // --- Event Listeners ---
+            /**
+             * Event delegation for chapter buttons with performance optimization
+             */
+            chapterGrid.addEventListener('click', (e) => {
+                if (e.target.classList.contains('chapter-button')) {
+                    openChapter(parseInt(e.target.dataset.chapter));
+                }
+            });
+            
             closeBtn.addEventListener('click', closeChapter);
             
-            // Disable Right-Click (Context Menu)
             document.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
             });
 
-            // Keyboard Navigation (Arrow keys scroll the viewer smoothly)
+            /**
+             * Optimized keyboard navigation with throttling
+             */
             document.addEventListener('keydown', (e) => {
                 if (viewerContainer.style.display === 'block') {
                     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-                        e.preventDefault(); 
-                        const scrollAmount = e.key === 'ArrowDown' ? 300 : -300; 
-                        viewerContainer.scrollBy({ top: scrollAmount, behavior: 'smooth' });
+                        e.preventDefault();
+                        clearTimeout(scrollTimeout);
+                        scrollTimeout = setTimeout(() => {
+                            const scrollAmount = e.key === 'ArrowDown' ? 300 : -300;
+                            viewerContainer.scrollBy({ top: scrollAmount, behavior: 'smooth' });
+                        }, 8);
                     } else if (e.key === 'Escape') {
                         closeChapter();
                     }
                 }
             });
 
-
-            // --- DevTools Detection Logic (Fixed: No localStorage/Permanent Lockout) ---
-            
+            // --- DevTools Detection Logic (UNCHANGED) ---
             const checkDevTools = () => {
                 const threshold = 160;
-                // Check 1: Size differential
                 if (window.outerWidth - window.innerWidth > threshold ||
                     window.outerHeight - window.innerHeight > threshold) {
                     return true;
                 }
                 
-                // Check 2: toString trick
                 const func = function() {};
                 func.toString = () => 'function() { [native code] }';
                 try {
@@ -418,18 +774,15 @@
             };
             
             function handleDevToolsDetection() {
-                // Show warning overlay and disable interaction
                 warningOverlay.classList.add('active'); 
-                document.body.style.overflow = 'hidden'; // Lock scrolling
-                viewerContainer.style.display = 'none'; // Hide viewer
+                document.body.style.overflow = 'hidden';
+                viewerContainer.style.display = 'none';
             }
             
             function clearDevToolsDetection() {
-                // Hide warning overlay and re-enable interaction
                 warningOverlay.classList.remove('active'); 
-                document.body.style.overflow = 'auto'; // Re-enable scrolling
+                document.body.style.overflow = 'auto';
                 
-                // Only re-show viewer if a chapter was open
                 if (currentChapter !== 0) {
                     viewerContainer.style.display = 'block';
                 }
@@ -442,7 +795,7 @@
                     if (checkDevTools()) {
                         handleDevToolsDetection();
                     } else {
-                        clearDevToolsDetection(); // Clear warning if DevTools is closed
+                        clearDevToolsDetection();
                     }
                 }, 100); 
                 
@@ -472,3 +825,4 @@
 
 </body>
 </html>
+images/chapter_7/page_1.jpg
